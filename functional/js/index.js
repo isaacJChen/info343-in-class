@@ -10,15 +10,15 @@ Functional programming is a style of programming
 based not on objects and methods, but on small,
 generic, and reusable "pure" functions. A pure
 function has these properties:
-- they operate only on their inputs, and make no 
-    reference to other data (e.g., variables at a 
+- they operate only on their inputs, and make no
+    reference to other data (e.g., variables at a
     higher scope)
-- they never modify their inputs—instead, they 
+- they never modify their inputs—instead, they
     always return new data or a reference to
     unmodified inputs
-- they have no side effects outside of their outputs 
+- they have no side effects outside of their outputs
     (e.g., they never modify variables at a higher scope)
-- because of these previous rules, they always return 
+- because of these previous rules, they always return
     the same outputs for the same inputs
 
 Functional programming is possible in languages
@@ -42,12 +42,12 @@ Each object has the same 3 properties:
  - count: the number of babies registered with
           the SSA with that name and sex.
 */
-console.log("there are %s records in the BABYNAMES array", 
+console.log("there are %s records in the BABYNAMES array",
     numeral(BABYNAMES.length).format("0,0"));
 
 /* FILTERING
 Every array has a .filter() method which takes a
-predicate function as the first parameter. The 
+predicate function as the first parameter. The
 .filter() function returns a new array containing
 only those elements for which the predicate function
 returned a truthy value
@@ -57,9 +57,45 @@ returned a truthy value
 //use to filter the BABYNAMES array based on the
 //value in the `sex` property of each object in
 //the array
+// function isMale(record) {
+//   return record.sex==="M";
+// }
+//
+// function isFemale(record) {
+//   return record.sex==="F";
+// }
+
+function isSex(sex) {
+  let lowerSex = sex.toLowerCase();
+  return function(record) {
+    let lowerRecordSex = record.sex.toLowerCase();
+    return lowerRecordSex === lowerSex;
+  }
+}
+
+let isMale = isSex("M");
+let isFemale = isSex("F");
+
+let males = BABYNAMES.filter(isMale);
+console.log(males.length + " male records");
+
+let females = BABYNAMES.filter(isFemale);
+console.log(females.length + " female records");
 
 
 
+//name
+function isName(name) {
+  let lowerName = name.toLowerCase();
+  return function(record) {
+    let lowerRecordName = record.name.toLowerCase();
+    return lowerRecordName === lowerName;
+  }
+}
+
+let isIsaac = isName("Isaac");
+let isaac = BABYNAMES.filter(isIsaac)
+console.log(isaac);
 
 
 /* SORTING
@@ -67,7 +103,7 @@ Every array also has a .sort() method, which takes
 a comparator function as the first parameter.
 The comparator function is passed two elements
 at a time, and must return a negative number if
-the first element is less than the second, 
+the first element is less than the second,
 a zero if they are equal to each other, or
 a positive number if the first is greater than
 the second.
@@ -77,24 +113,43 @@ the second.
 //to sort the BABYNAMES array based on count
 //and name
 
+function byCount(record1, record2) {
+  return record1.count-record2.count;
+}
 
+function byName(record1, record2) {
+  return record1.name.localeCompare(record2.name);
+}
+
+let sortedFemales = females.sort(byCount);
+let sortedMales = males.sort(byCount);
+console.log("least popular female name: ", sortedFemales[0]);
+console.log("least popular male name: ", sortedMales[0]);
 
 //TODO: create a descending() function that
 //wraps a comparator function to perform a
 //descending sort instead of an ascending sort
+function descending(comparator) {
+  return function(record1, record2){
+    return -comparator(record1,record2);
+  }
+}
+
+let popularFemales = females.sort(descending(byCount));
+console.log("most popular female name: ", popularFemales[0]);
 
 
-
-/* SLICING 
+/* SLICING
 Every array has a .slice() method, which returns
 a new array containing only a segment of the elements.
 You provide the starting index, and the index to go
 up to but not include.
 */
 
-//TODO: use .slice() to get the top 10 female baby 
+//TODO: use .slice() to get the top 10 female baby
 //name records
-
+let top3FemaleNames = popularFemales.slice(0,3);
+console.log(top3FemaleNames);
 
 /* MAPPING
 Every arrays also has a .map() method, which
@@ -109,12 +164,17 @@ the output array.
 //TODO: use .map() to transform the top 10 female
 //baby name records array into an array of strings
 //containing just the names themselves
-
+function pluckName(record) {
+  return record.name;
+}
+let top3FemaleJustNames = top3FemaleNames.map(pluckName);
+console.log(top3FemaleJustNames);
 
 //TODO: use .map() to transform those top 10
 //names into all lower case
 
-
+let result = BABYNAMES.filter(isFemale).sort(descending(byCount)).slice(0,10).map(pluckName).join(", ");
+console.log(result);
 
 /* REDUCING
 Every array also has a .reduce() method, which
@@ -127,8 +187,8 @@ to the maximum value in the array.
 /**
  * Generates `amount` random integers between
  * 0  and `max` and returns them as a new array.
- * @param {number} amount 
- * @param {number} max 
+ * @param {number} amount
+ * @param {number} max
  * @returns {number[]}
  */
 function randomIntegers(amount, max) {
@@ -138,6 +198,8 @@ function randomIntegers(amount, max) {
     }
     return randoms;
 }
+
+
 
 /**
  * A reducer function to calculate the sum of
@@ -150,18 +212,23 @@ function randomIntegers(amount, max) {
  */
 function sum(accumulator, num) {
     //TODO: implement this function
+    return accumulator+num;
 }
 
-//TODO: use randomIntegers() to generate an array of 
+//TODO: use randomIntegers() to generate an array of
 //random integers and use .reduce() with sum*() to
 //calculate the sum of those integers.
-
+let randomNums = randomIntegers(100, 500);
+console.log(randomNums.reduce(sum, 0));
 
 //TODO: now define a max() reducer that reduces
 //an array of numbers to their maximum value.
-//Then use that with .reduce() to find the 
+//Then use that with .reduce() to find the
 //maximum value in an array of random integers.
-
+function max(accumulator, num) {
+  return accumulator > num ? accumulator : num;
+}
+console.log(randomNums.reduce(max, randomNums[0]));
 
 
 //TODO: given that a JavaScript object is really
@@ -176,7 +243,7 @@ function sum(accumulator, num) {
 //a count of 1. Use a JavaScript object as the
 //accumulator value. Use .hasOwnProperty() on the
 //accumulator object to test whether it has the
-//`name` property from the current record as a 
+//`name` property from the current record as a
 //key already. If not, add it to the object with
 //an associate value of 0. Then increment the value
 //and return the accumulator.
@@ -184,25 +251,40 @@ function sum(accumulator, num) {
 /**
  * Reducer for counting how many times a name
  * appears in the array of baby name records
- * @param {Object} nameMap 
- * @param {BabyNameRecord} record 
+ * @param {Object} nameMap
+ * @param {BabyNameRecord} record
  * @returns {Object}
  */
 function countNames(nameMap, record) {
     //TODO: implement this function
+    let name = record.name;
+    if(nameMap.hasOwnProperty(name)) {
+      nameMap[name]++;
+    } else {
+      nameMap[name] = 1;
+    }
+    return nameMap;
 }
 
+console.log(BABYNAMES.reduce(countNames, {}));
+
 //TODO: use the countNames reducer to generate
-//an object containing all the distinct names 
+//an object containing all the distinct names
 //as keys, with values representing the number of
 //times that name appeared in the array.
 
+
 //TODO: use Object.keys() to get all of the distinct
 //names as an array of strings
+let obj = BABYNAMES.reduce(countNames, {})
+let ret = Object.keys(obj)
+console.log(ret);
 
 
 //TODO: filter that array of keys so that you end
 //up with only the names that appeared twice,
 //which will be all the names that were used for
 //both male *and* female babies.
-
+function has2(){
+  
+}

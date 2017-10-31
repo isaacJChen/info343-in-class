@@ -1,2 +1,17 @@
 /* TODO: override/augment Bootstrap styling where necessary */
 
+body {
+  font-family: "Open Sans"
+}
+
+@media (min-width: 992px) {
+  header {
+    background-image: url(../img/header.jpg);
+    background-size: cover;
+    background-position: center;
+  }
+}
+
+.card {
+  width: 300px;
+}
