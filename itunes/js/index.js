@@ -17,7 +17,7 @@ let preview = new Audio();
  * Handles responses from the fetch() API.
  * The iTunes API always returns JSON, even for
  * status codes >= 400.
- * @param {Response} response 
+ * @param {Response} response
  */
 function handleResponse(response) {
     if (response.ok) {
@@ -35,7 +35,7 @@ function handleResponse(response) {
 
 /**
  * Handles errors that occur while fetching
- * @param {Error} err 
+ * @param {Error} err
  */
 function handleError(err) {
     console.error(err);
@@ -44,10 +44,33 @@ function handleError(err) {
 
 /**
  * Renders the iTunes search API results
- * @param {Object} data 
+ * @param {Object} data
  */
 function renderResults(data) {
     //TODO: implement this
+    console.log(data);
+    RESULTS_DIV.textContent = "";
+    data.results.forEach(function(track){
+      let img = document.createElement("img");
+      img.src = track.artworkUrl100;
+      img.alt = track.trackName;
+      img.title = track.trackName;
+      RESULTS_DIV.appendChild(img);
+
+      img.addEventListener("click", function() {
+        //preview.play();
+        if (preview.src === track.previewUrl) {
+          if (preview.paused) {
+            preview.play();
+          } else {
+            preview.pause();
+          }
+        } else {
+          preview.src = track.previewUrl;
+          preview.play();
+        }
+      });
+    });
 }
 
 //TODO: listen for the "submit" event
@@ -56,3 +79,12 @@ function renderResults(data) {
 //and use fetch() to search iTunes for tracks
 //matching the term the user entered in the
 //<input> element within the form.
+document.querySelector("#search-form").addEventListener("submit", function(evt){
+  evt.preventDefault();
+  let term = this.querySelector("input").value;
+  fetch(SEARCH_API + term)
+    .then(handleResponse)
+    .then(renderResults)
+    .catch(handleError)
+
+})
